@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+	<link rel="stylesheet" href="./leaflet.css"/>
+	<script src="leaflet.js"></script>
+    <style>
+        #map { 
+			height: 480px;
+			width: 780px; 
+			
+			}
+    </style>
+</head>
+<body>
+	<div id="map"></div>
+	<div>
+		起点坐标：<input id="startPoint" type="text"  value=""/>
+		终点坐标：<input id="endPoint"  type="text" value="" />
+	</div>
+</body>
+</html>
+<script type="text/javascript">
+	var status = 1;
+	var map = L.map('map', {
+		center: [23.002801948210806, 113.1035614013672],
+		zoom: 13
+	});
+	 L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+		maxZoom: 18,
+		id: 'mapbox.streets',
+		accessToken: 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw',
+		attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+		'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+		'Imagery © <a href="http://mapbox.com">Mapbox</a>'
+	}).addTo(map);
+	L.marker([50.5, 30.5]).addTo(map);
+	
+	function onMapClick(e) {
+		const lat = e.latlng.lat
+		const lng = e.latlng.lng
+		const startPoint = document.getElementById("startPoint").value
+		const endPoint = document.getElementById("endPoint").value
+		var startIcon = L.icon({
+			iconUrl:'./images/start.png',
+			iconSize:[48,48],
+			iconAnchor:[24,48],//标记点在图标上位置
+			shadowAnchor:[4,62],
+			popupAnchor:[-3,-76]
+		})
+		var endIcon = L.icon({
+			iconUrl:'./images/end.png',
+			iconSize:[48,48],
+			iconAnchor:[24,48],//标记点在图标上位置
+			shadowAnchor:[4,62],
+			popupAnchor:[-3,-76]
+		})
+		if(status < 3) {
+			const pointInfo = lat + "," +lng
+			console.log(pointInfo)
+			// 两者都为空时,为起点坐标
+			var marker = new Object();
+			if(startPoint == null && endPoint == null) {
+				document.getElementById("startPoint").value = pointInfo
+				marker = L.marker([lat, lng],{icon:startIcon}).addTo(map);
+			}  else if ((startPoint == null || startPoint == "") && endPoint != null) {
+				document.getElementById("startPoint").value = pointInfo
+				marker = L.marker([lat, lng],{icon:startIcon}).addTo(map);
+			} else {
+				document.getElementById("endPoint").value = pointInfo
+				marker = L.marker([lat, lng],{icon:endIcon}).addTo(map);
+			}
+			status ++;
+			marker.on('click',function(e) {
+				const startPoint = document.getElementById("startPoint").value
+				const endPoint = document.getElementById("endPoint").value
+				// 获取当前需要删除标记坐标
+				const point = e.latlng.lat + "," + e.latlng.lng
+				// 获取起点和终点坐标内容
+				if(point==startPoint) {
+					document.getElementById("startPoint").value = ""
+				} else {
+					document.getElementById("endPoint").value = ""
+				}
+				map.removeLayer(marker)
+				status --;
+			})
+		}
+	}
+	map.on("click",onMapClick)
+</script>
